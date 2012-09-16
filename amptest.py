@@ -1,5 +1,5 @@
 import sys, time
-from math import sin, pi
+from math import sin, pi, log
 from itertools import cycle
 import pygame
 import pygame.gfxdraw
@@ -22,13 +22,13 @@ light_red = pygame.Color(255,127,127,127)
 light_yellow = pygame.Color(255,255,127, 127)
 light_green = pygame.Color(127,255,127, 64)
 
-anim_rate = 35
+anim_rate = 30
 
 phase = 0
-#period = 256.0
-period = 256.0
-for phase in cycle(range(256)):
+period = 200.0
+for phase in cycle(range(200)):
 #for period in cycle(range(128, 1024)):
+#for period in cycle([n**3/600.0**2 + 2 for n in range(600, 1, -1)]):
 
     # generate the wave under inspection
     phase, period, window = phase, period, 512
@@ -44,8 +44,8 @@ for phase in cycle(range(256)):
 
     # write graph info
     text = top_font.render(
-        'phase: {}    period: {}    freq: {}    window: {}'.format(
-        phase, period, 1/period, window), True, light)
+        'phase: {0}    period: {1:.3f}    freq: {2:.4f}    window: {3}'.format(
+        phase, period, 1.0/period, window), True, light)
     display.blit(text, dest=(8, 0))
 
     # draw the wave grid
@@ -90,9 +90,9 @@ for phase in cycle(range(256)):
         'maximum: {0:.2f}    integrated: {1:.6f}'.format(f_max, f_int),
             True, light)
     display.blit(text, dest=(8, mid_top-16))
-    pygame.gfxdraw.hline(display, 232, int(232+f_int*1200), mid_top-8,
+    pygame.gfxdraw.hline(display, 232, int(232+f_int*400), mid_top-8,
         light_yellow)
-    pygame.gfxdraw.vline(display, int(232+f_int*1200), mid_top-4, mid_top-12,
+    pygame.gfxdraw.vline(display, int(232+f_int*400), mid_top-4, mid_top-12,
         light_yellow)
 
     # draw the fft grid
