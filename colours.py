@@ -32,12 +32,15 @@ buff = jack.get_buffer_size()
 rate = jack.get_sample_rate()
 freqs = np.fft.fftfreq(buff, 1.0/rate)[:buff/2]
 
-freq_rgb = array([hue_to_rgb((log2(F) - log2(440)) % 1)  for F in freqs])
+hues = array([(log2(F) - log2(440)) % 1 for F in freqs])
+hue_order = array(sorted(enumerate(hues[1:], 1), key=lambda f: f[1]), 'i').T[0]
+
+freq_rgb = array([hue_to_rgb(h) for h in hues])
 capture = np.zeros((1, buff), 'f')
 dummy = np.zeros((0,0), 'f')
 
 pygame.init()
-size = (1024, 600)
+size = (1024, 32)
 window = pygame.display.set_mode(size)
 
 ffact = size[0]/float(len(freqs))
@@ -50,11 +53,21 @@ while True:
 
 	transformed = np.fft.rfft(capture[0][1:])
 
+	#pygame.draw.rect(window, pygame.Color(0,0,0), (0,0,size[0],size[1]))
+
 	pygame.draw.rect(window, pygame.Color(0,0,0), (0,0,size[0],size[1]))
+	edge = 0
+	for index in hue_order:
+		colour = pygame.Color(*[int(c) for c in 255*freq_rgb[index]])
+		amp = transformed[index]
+		width = amp
+		pygame.draw.rect(window, colour, (edge, 0, width, size[1]))
+		edge += width
+	"""
 	for freq, amp in enumerate(transformed[1:], 1):
 		pygame.draw.line(window,
 			pygame.Color(*[int(c) for c in 255*freq_rgb[freq]]),
-			(ffact*freq, 0), (ffact*freq, amp*7))
+			(ffact*freq, 0), (ffact*freq, amp*7))"""
 
 	#pygame.draw.rect(window, pygame.Color(*rgb), (0,0,size[0],size[1]))
 	pygame.display.update()
