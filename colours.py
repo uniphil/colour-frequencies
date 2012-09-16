@@ -31,6 +31,7 @@ jack.connect('system:capture_1', 'colours:in')
 buff = jack.get_buffer_size()
 rate = jack.get_sample_rate()
 freqs = np.fft.fftfreq(buff, 1.0/rate)[:buff/2]
+
 freq_rgb = array([hue_to_rgb((log2(F) - log2(440)) % 1)  for F in freqs])
 capture = np.zeros((1, buff), 'f')
 dummy = np.zeros((0,0), 'f')
@@ -39,7 +40,7 @@ pygame.init()
 size = (1024, 600)
 window = pygame.display.set_mode(size)
 
-ffact = size[0]/float(freqs[-1])
+ffact = size[0]/float(len(freqs))
 
 while True:
 	try:
@@ -53,7 +54,7 @@ while True:
 	for freq, amp in enumerate(transformed[1:], 1):
 		pygame.draw.line(window,
 			pygame.Color(*[int(c) for c in 255*freq_rgb[freq]]),
-			(freq, 0), (freq, amp*7))
+			(ffact*freq, 0), (ffact*freq, amp*7))
 
 	#pygame.draw.rect(window, pygame.Color(*rgb), (0,0,size[0],size[1]))
 	pygame.display.update()
