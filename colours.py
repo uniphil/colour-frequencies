@@ -3,6 +3,8 @@ import numpy as np
 import jack
 from pylab import plot, show, draw, ion, xlim, ylim, xscale, bar, array, \
 	log2, nan, average
+import pygame
+from pygame.locals import *
 
 def hue_to_rgb(hue):
 	r, g, b = 0.0, 0.0, 0.0
@@ -29,34 +31,15 @@ jack.connect('system:capture_1', 'colours:in')
 buff = jack.get_buffer_size()
 rate = jack.get_sample_rate()
 freqs = np.fft.fftfreq(buff, 1.0/rate)[:buff/2]
-
 freq_rgb = array([hue_to_rgb((log2(F) - log2(440)) % 1)  for F in freqs])
-
 capture = np.zeros((1, buff), 'f')
 dummy = np.zeros((0,0), 'f')
 
-"""ion()
-bars = bar(freqs, range(buff/2))
-xscale('log')
-ylim((0,1))"""
-
-import pygame
-from pygame.locals import *
 pygame.init()
-size = (640, 380)
+size = (1024, 600)
 window = pygame.display.set_mode(size)
 
-class Rolling(list):
-	def __init__(self, size, placeholder=0):
-		self.size = size
-		self.index = 0
-		self.extend(placeholder for n in range(size))
-	def push(self, item):
-		self[self.index] = item
-		self.index = (self.index + 1) % self.size
-
-		
-last3 = Rolling(1, [0,0,0])
+ffact = size[0]/float(freqs[-1])
 
 while True:
 	try:
@@ -65,16 +48,14 @@ while True:
 		print 'Input Sync'
 
 	transformed = np.fft.rfft(capture[0][1:])
-	rgbs = (transformed * freq_rgb.T)[:,1:]
-	rgb = [average(col)*1024 for col in rgbs]
-	#last3.push(rgb)
-	#rgb = [average(c) for c in array(last3).T]
-	rgb = [(int(c) if c < 256 else 255) if c >= 0 else 0 for c in rgb]
 
-	last3.push(rgb)
+	pygame.draw.rect(window, pygame.Color(0,0,0), (0,0,size[0],size[1]))
+	for freq, amp in enumerate(transformed[1:], 1):
+		pygame.draw.line(window,
+			pygame.Color(*[int(c) for c in 255*freq_rgb[freq]]),
+			(freq, 0), (freq, amp*7))
 
-	print rgb
-	pygame.draw.rect(window, pygame.Color(*rgb), (0,0,size[0],size[1]))
+	#pygame.draw.rect(window, pygame.Color(*rgb), (0,0,size[0],size[1]))
 	pygame.display.update()
 	
 
