@@ -60,7 +60,7 @@ while True:
 	for index in hue_order:
 		colour = pygame.Color(*[int(c) for c in 255*freq_rgb[index]])
 		amp = transformed[index]
-		width = amp
+		width = amp+1
 		pygame.draw.rect(window, colour, (edge, 0, width, size[1]))
 		edge += width
 	"""
